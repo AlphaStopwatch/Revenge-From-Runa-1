@@ -48,31 +48,14 @@
     digits.style.setProperty("--fs", Math.max(14, size) + "px");
   }
 
-  /* ---------- CALENDAR BREAKDOWN (Dhaka wall-clock, true calendar months) ---------- */
-  const daysInMonth = (y, mo) => new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
-  function breakdown(nowMs) {
-    const a = new Date(START_MS + DHAKA_OFFSET_MS), b = new Date(Math.max(nowMs, START_MS) + DHAKA_OFFSET_MS);
-    let y = b.getUTCFullYear() - a.getUTCFullYear();
-    let mo = b.getUTCMonth() - a.getUTCMonth();
-    let d = b.getUTCDate() - a.getUTCDate();
-    let h = b.getUTCHours() - a.getUTCHours();
-    let mi = b.getUTCMinutes() - a.getUTCMinutes();
-    let s = b.getUTCSeconds() - a.getUTCSeconds();
-    if (s < 0) { s += 60; mi--; }
-    if (mi < 0) { mi += 60; h--; }
-    if (h < 0) { h += 24; d--; }
-    if (d < 0) {
-      let pm = b.getUTCMonth() - 1, py = b.getUTCFullYear();
-      if (pm < 0) { pm = 11; py--; }
-      d += daysInMonth(py, pm); mo--;
-    }
-    if (mo < 0) { mo += 12; y--; }
-    return { y, mo, d, h, mi, s };
-  }
-  const bEls = ["y","mo","d","h","mi","s"].map(k => [k, $("b-" + k)]);
+  /* ---------- BREAKDOWN: days, hours, minutes, seconds (no months/years) ---------- */
+  const bEls = { d: $("b-d"), h: $("b-h"), mi: $("b-mi"), s: $("b-s") };
   function renderBreakdown(ms) {
-    const r = breakdown(START_MS + ms);
-    for (const [k, el] of bEls) el.textContent = r[k];
+    const t = BigInt(Math.floor(ms / 1000));
+    bEls.d.textContent = (t / 86400n).toString();
+    bEls.h.textContent = ((t / 3600n) % 24n).toString();
+    bEls.mi.textContent = ((t / 60n) % 60n).toString();
+    bEls.s.textContent = (t % 60n).toString();
   }
 
   /* ---------- TICK (rAF only while visible; re-derives from clock each frame) ---------- */
